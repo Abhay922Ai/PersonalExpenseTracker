@@ -1,0 +1,88 @@
+﻿@model List<PersonalExpenseTracker.Models.SavingsGoal>
+
+@{
+    ViewData["Title"] = "Savings Goals";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Savings Goals</h2>
+
+        <a asp-action="Add" class="btn btn-success">
+            + Add Savings Goal
+        </a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            No savings goals found.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+
+            @foreach (var goal in Model)
+            {
+                decimal percentage = 0;
+
+                if (goal.TargetAmount > 0)
+                {
+                    percentage = (goal.SavedAmount / goal.TargetAmount) * 100;
+                }
+
+                if (percentage > 100)
+                {
+                    percentage = 100;
+                }
+
+                <div class="col-md-6 mb-4">
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+
+                            <h4>@goal.GoalName</h4>
+
+                            <p>
+                                <strong>Saved:</strong>
+                                ₹@goal.SavedAmount.ToString("N2")
+                            </p>
+
+                            <p>
+                                <strong>Target:</strong>
+                                ₹@goal.TargetAmount.ToString("N2")
+                            </p>
+
+                            @if (goal.TargetDate.HasValue)
+                            {
+                                <p>
+                                    <strong>Target Date:</strong>
+                                    @goal.TargetDate.Value.ToString("dd-MM-yyyy")
+                                </p>
+                            }
+
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-success"
+                                     role="progressbar"
+                                     style="width: @percentage%;">
+                                    @percentage.ToString("0.0")%
+                                </div>
+                            </div>
+
+                            <small>
+                                ₹@((goal.TargetAmount - goal.SavedAmount).ToString("N2"))
+                                remaining
+                            </small>
+
+                        </div>
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>

@@ -1,0 +1,594 @@
+﻿```cshtml
+@model PersonalExpenseTracker.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container dashboard-container">
+
+    <!-- Welcome Section -->
+    <div class="dashboard-header mb-4">
+        <div>
+            <p class="dashboard-label">PERSONAL FINANCE</p>
+
+            <h1>
+                Welcome back, @Model.FullName 👋
+            </h1>
+
+            <p class="dashboard-subtitle">
+                Here's a quick overview of your financial activity.
+            </p>
+        </div>
+    </div>
+
+
+    <!-- Financial Summary -->
+    <div class="row g-4">
+
+        <!-- Income -->
+        <div class="col-lg-4 col-md-6">
+            <div class="finance-card income-card">
+
+                <div class="finance-card-top">
+                    <div>
+                        <p class="finance-label">TOTAL INCOME</p>
+
+                        <h2>
+                            ₹@Model.TotalIncome.ToString("N2")
+                        </h2>
+                    </div>
+
+                    <div class="finance-icon">
+                        ↑
+                    </div>
+                </div>
+
+                <p class="finance-description">
+                    Total money received
+                </p>
+
+            </div>
+        </div>
+
+
+        <!-- Expenses -->
+        <div class="col-lg-4 col-md-6">
+            <div class="finance-card expense-card">
+
+                <div class="finance-card-top">
+                    <div>
+                        <p class="finance-label">TOTAL EXPENSES</p>
+
+                        <h2>
+                            ₹@Model.TotalExpenses.ToString("N2")
+                        </h2>
+                    </div>
+
+                    <div class="finance-icon">
+                        ↓
+                    </div>
+                </div>
+
+                <p class="finance-description">
+                    Total money spent
+                </p>
+
+            </div>
+        </div>
+
+
+        <!-- Balance -->
+        <div class="col-lg-4 col-md-12">
+            <div class="finance-card balance-card">
+
+                <div class="finance-card-top">
+                    <div>
+                        <p class="finance-label">AVAILABLE BALANCE</p>
+
+                        <h2>
+                            ₹@Model.Balance.ToString("N2")
+                        </h2>
+                    </div>
+
+                    <div class="finance-icon">
+                        ₹
+                    </div>
+                </div>
+
+                <p class="finance-description">
+                    Your current available balance
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Savings Section -->
+    <div class="row g-4 mt-1">
+
+        <div class="col-lg-8">
+
+            <div class="dashboard-card">
+
+                <div class="dashboard-card-header">
+
+                    <div>
+                        <p class="section-label">SAVINGS</p>
+
+                        <h3>
+                            Savings Goal
+                        </h3>
+                    </div>
+
+                    <div class="goal-icon">
+                        🎯
+                    </div>
+
+                </div>
+
+
+                @if (Model.SavingsTarget > 0)
+                {
+                    <div class="savings-content">
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+
+                            <div>
+                                <h4 class="goal-name">
+                                    @Model.SavingsGoalName
+                                </h4>
+
+                                <p class="text-muted mb-0">
+                                    Keep going, you're making progress!
+                                </p>
+                            </div>
+
+                            <div class="percentage">
+                                @Model.SavingsPercentage.ToString("N1")%
+                            </div>
+
+                        </div>
+
+
+                        <div class="progress savings-progress">
+
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 style="width:@Math.Min(Model.SavingsPercentage, 100)%">
+                            </div>
+
+                        </div>
+
+
+                        <div class="d-flex justify-content-between mt-3">
+
+                            <div>
+                                <small class="text-muted">
+                                    SAVED
+                                </small>
+
+                                <div class="amount-saved">
+                                    ₹@Model.TotalSavings.ToString("N2")
+                                </div>
+                            </div>
+
+
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    TARGET
+                                </small>
+
+                                <div class="amount-target">
+                                    ₹@Model.SavingsTarget.ToString("N2")
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-goal">
+
+                        <div class="empty-icon">
+                            🎯
+                        </div>
+
+                        <h4>No savings goal yet</h4>
+
+                        <p>
+                            Create a savings goal and start tracking your progress.
+                        </p>
+
+                        <a asp-controller="SavingsGoal"
+                           asp-action="Add"
+                           class="btn btn-primary">
+                            Create Savings Goal
+                        </a>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+
+            <div class="dashboard-card quick-actions">
+
+                <p class="section-label">
+                    QUICK ACTIONS
+                </p>
+
+                <h3>
+                    Manage Finances
+                </h3>
+
+                <div class="action-list">
+
+                    <a asp-controller="Income"
+                       asp-action="Add"
+                       class="action-item">
+
+                        <span class="action-icon income-action">
+                            +
+                        </span>
+
+                        <div>
+                            <strong>Add Income</strong>
+                            <small>Record new income</small>
+                        </div>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="Expense"
+                       asp-action="Add"
+                       class="action-item">
+
+                        <span class="action-icon expense-action">
+                            −
+                        </span>
+
+                        <div>
+                            <strong>Add Expense</strong>
+                            <small>Record your spending</small>
+                        </div>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="SavingsGoal"
+                       asp-action="Add"
+                       class="action-item">
+
+                        <span class="action-icon savings-action">
+                            🎯
+                        </span>
+
+                        <div>
+                            <strong>New Goal</strong>
+                            <small>Set a savings target</small>
+                        </div>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* Dashboard */
+
+    .dashboard-container {
+        padding-top: 15px;
+        padding-bottom: 30px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #111827;
+    }
+
+    .dashboard-label,
+    .section-label {
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        margin-bottom: 7px;
+    }
+
+    .dashboard-subtitle {
+        color: #6b7280;
+        margin-bottom: 0;
+        font-size: 15px;
+    }
+
+
+    /* Finance Cards */
+
+    .finance-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+        height: 100%;
+        transition: 0.2s ease;
+    }
+
+        .finance-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+        }
+
+    .finance-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .finance-label {
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        margin-bottom: 10px;
+    }
+
+    .finance-card h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+        color: #111827;
+    }
+
+    .finance-description {
+        color: #9ca3af;
+        font-size: 13px;
+        margin-top: 15px;
+        margin-bottom: 0;
+    }
+
+    .finance-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .income-card .finance-icon {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .expense-card .finance-icon {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .balance-card .finance-icon {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+
+    /* Dashboard Cards */
+
+    .dashboard-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 25px;
+        height: 100%;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .dashboard-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+        .dashboard-card-header h3,
+        .quick-actions h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+    .goal-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        border-radius: 12px;
+        font-size: 20px;
+    }
+
+
+    /* Savings */
+
+    .goal-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .percentage {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2563eb;
+    }
+
+    .savings-progress {
+        height: 12px;
+        background: #e5e7eb;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+        .savings-progress .progress-bar {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            border-radius: 20px;
+        }
+
+    .amount-saved,
+    .amount-target {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-top: 3px;
+    }
+
+
+    /* Empty Goal */
+
+    .empty-goal {
+        text-align: center;
+        padding: 20px 10px;
+    }
+
+    .empty-icon {
+        font-size: 35px;
+        margin-bottom: 10px;
+    }
+
+    .empty-goal h4 {
+        font-weight: 700;
+    }
+
+    .empty-goal p {
+        color: #6b7280;
+        margin-bottom: 18px;
+    }
+
+
+    /* Quick Actions */
+
+    .quick-actions h3 {
+        margin-bottom: 20px;
+    }
+
+    .action-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .action-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        text-decoration: none;
+        color: #111827;
+        border-radius: 11px;
+        transition: 0.2s ease;
+    }
+
+        .action-item:hover {
+            background: #f8fafc;
+            color: #111827;
+        }
+
+    .action-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .income-action {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .expense-action {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .savings-action {
+        background: #dbeafe;
+    }
+
+    .action-item div {
+        flex: 1;
+    }
+
+    .action-item strong {
+        display: block;
+        font-size: 14px;
+    }
+
+    .action-item small {
+        display: block;
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .action-arrow {
+        color: #9ca3af;
+        font-size: 18px;
+    }
+
+
+   
+
+    {
+        font-size: 1.6rem;
+    }
+
+    .finance-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .dashboard-card {
+        padding: 20px;
+    }
+
+    }
+</style>
+```
