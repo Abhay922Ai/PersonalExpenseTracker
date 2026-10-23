@@ -15,6 +15,16 @@ namespace PersonalExpenseTracker.Controllers
 
         public IActionResult Index()
         {
+            if (HttpContext.Session.GetInt32("UserId") != null)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            return RedirectToAction("Login", "Account");
+        }
+
+        public IActionResult TestDb()
+        {
             try
             {
                 using (SqlConnection connection = _dbConnection.GetConnection())
