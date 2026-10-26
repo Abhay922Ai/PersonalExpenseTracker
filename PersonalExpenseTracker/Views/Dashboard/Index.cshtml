@@ -1,4 +1,3 @@
-﻿```cshtml
 @model PersonalExpenseTracker.ViewModels.DashboardViewModel
 
 @{
@@ -577,18 +576,17 @@
 
    
 
-    {
-        font-size: 1.6rem;
-    }
+    @@media (max-width: 768px) {
+        .dashboard-header h1 {
+            font-size: 1.6rem;
+        }
 
-    .finance-card h2 {
-        font-size: 1.5rem;
-    }
+        .finance-card h2 {
+            font-size: 1.5rem;
+        }
 
-    .dashboard-card {
-        padding: 20px;
-    }
-
+        .dashboard-card {
+            padding: 20px;
+        }
     }
 </style>
-```

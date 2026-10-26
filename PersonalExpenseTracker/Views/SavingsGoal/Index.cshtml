@@ -1,15 +1,16 @@
-﻿@model List<PersonalExpenseTracker.Models.SavingsGoal>
-
+@model List<PersonalExpenseTracker.Models.SavingsGoal>
 
 @{
     ViewData["Title"] = "Savings Goals";
 }
 
-
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Savings Goals</h2>
+        <div>
+            <h2>Savings Goals</h2>
+            <p class="text-muted mb-0">Set targets and track your savings milestones</p>
+        </div>
 
         <a asp-action="Add" class="btn btn-success">
             + Add Savings Goal
@@ -18,88 +19,117 @@
 
     @if (Model.Count == 0)
     {
-        <div class="alert alert-info">
-            No savings goals found.
+        <div class="card p-5 text-center shadow-sm">
+            <div class="mb-3" style="font-size: 2.5rem;">🎯</div>
+            <h4>No savings goals yet</h4>
+            <p class="text-muted">Set up a goal like an emergency fund, gadget, or vacation.</p>
+            <div>
+                <a asp-action="Add" class="btn btn-success">
+                    + Add Savings Goal
+                </a>
+            </div>
         </div>
     }
-
-
-
     else
     {
-        <div class="row">
-
+        <div class="row g-4">
             @foreach (var goal in Model)
             {
                 decimal percentage = 0;
-
                 if (goal.TargetAmount > 0)
                 {
                     percentage = (goal.SavedAmount / goal.TargetAmount) * 100;
                 }
+                bool isCompleted = percentage >= 100;
+                decimal displayPercentage = Math.Min(percentage, 100);
+                decimal remaining = Math.Max(0, goal.TargetAmount - goal.SavedAmount);
 
-
-
-
-
-
-                if (percentage > 100)
-                {
-                    percentage = 100;
-                }
-
-
-
-
-                <div class="col-md-6 mb-4">
-
-       
-                    <div class="card shadow-sm">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100 border">
                         <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h4 class="card-title mb-1">@goal.GoalName</h4>
+                                    @if (goal.TargetDate.HasValue)
+                                    {
+                                        <small class="text-muted">
+                                            Target Date: <strong>@goal.TargetDate.Value.ToString("dd MMM yyyy")</strong>
+                                        </small>
+                                    }
+                                </div>
 
-                            <h4>@goal.GoalName</h4>
+                                @if (isCompleted)
+                                {
+                                    <span class="badge bg-success py-1 px-2">Goal Reached! 🎉</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary py-1 px-2">@percentage.ToString("0.0")%</span>
+                                }
+                            </div>
 
-                            <p>
-                                <strong>Saved:</strong>
-                                ₹@goal.SavedAmount.ToString("N2")
-                            </p>
-
-
-                            <p>
-
-                                <strong>Target:</strong>
-                                ₹@goal.TargetAmount.ToString("N2")
-                            </p>
-
-
-
-                            @if (goal.TargetDate.HasValue)
-                            {
-                                <p>
-                                    <strong>Target Date:</strong>
-                                    @goal.TargetDate.Value.ToString("dd-MM-yyyy")
-                                </p>
-                            }
-
-                            <div class="progress mb-2" style="height: 25px;">
-                                <div class="progress-bar bg-success"
-                                     role="progressbar"
-                                     style="width: @percentage%;">
-                                    @percentage.ToString("0.0")%
+                            <div class="my-3">
+                                <div class="progress" style="height: 18px;">
+                                    <div class="progress-bar @(isCompleted ? "bg-success" : "bg-primary")"
+                                         role="progressbar"
+                                         style="width: @displayPercentage.ToString("0.0")%;">
+                                        @displayPercentage.ToString("0.0")%
+                                    </div>
                                 </div>
                             </div>
 
-                            <small>
-                                ₹@((goal.TargetAmount - goal.SavedAmount).ToString("N2"))
-                                remaining
-                            </small>
+                            <div class="d-flex justify-content-between mb-3 text-sm">
+                                <div>
+                                    <small class="text-muted d-block">Saved</small>
+                                    <span class="fw-bold text-success fs-5">₹@goal.SavedAmount.ToString("N2")</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Target</small>
+                                    <span class="fw-bold text-dark fs-5">₹@goal.TargetAmount.ToString("N2")</span>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-3">
+                                @if (isCompleted)
+                                {
+                                    <span class="text-success fw-semibold">Congratulations! You have reached this savings target.</span>
+                                }
+                                else
+                                {
+                                    <span>₹@remaining.ToString("N2") remaining to reach your goal.</span>
+                                }
+                            </p>
+
+                            <!-- Add Progress / Actions -->
+                            <div class="pt-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                @if (!isCompleted)
+                                {
+                                    <form asp-action="AddProgress" method="post" class="d-flex align-items-center gap-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@goal.GoalId" />
+                                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                                            <span class="input-group-text">₹</span>
+                                            <input type="number" step="0.01" min="1" name="amount" class="form-control" placeholder="Amount" required />
+                                            <button type="submit" class="btn btn-outline-success" title="Add to saved amount">Add</button>
+                                        </div>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div></div>
+                                }
+
+                                <form asp-action="Delete" asp-route-id="@goal.GoalId" method="post"
+                                      onsubmit="return confirm('Are you sure you want to delete the goal &quot;@goal.GoalName&quot;?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
 
                         </div>
                     </div>
-
                 </div>
             }
-
         </div>
     }
 

@@ -1,13 +1,13 @@
-﻿
-
+@{
+    bool isLoggedIn = Context.Session.GetInt32("UserId") != null;
+    string? userName = Context.Session.GetString("FullName");
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-
-    <title>TEST - ExpenseTrack</title>
+    <title>@(ViewData["Title"] ?? "Overview") - ExpenseTrack</title>
 
     <link rel="stylesheet"
           href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -30,9 +30,8 @@
 
                 <!-- Brand -->
                 <a class="navbar-brand fw-bold"
-                   asp-controller="Dashboard"
-                   asp-action="Index">
-
+                   asp-controller="@(isLoggedIn ? "Dashboard" : "Account")"
+                   asp-action="@(isLoggedIn ? "Index" : "Login")">
                     <span class="brand-icon">₹</span>
                     ExpenseTrack
                 </a>
@@ -45,70 +44,91 @@
                         aria-controls="mainNavbar"
                         aria-expanded="false"
                         aria-label="Toggle navigation">
-
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <!-- Navigation -->
                 <div class="collapse navbar-collapse" id="mainNavbar">
+                    @if (isLoggedIn)
+                    {
+                        <ul class="navbar-nav me-auto align-items-lg-center">
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Dashboard"
+                                   asp-action="Index">
+                                    Dashboard
+                                </a>
+                            </li>
 
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Income"
+                                   asp-action="Index">
+                                    Income
+                                </a>
+                            </li>
 
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Expense"
+                                   asp-action="Index">
+                                    Expenses
+                                </a>
+                            </li>
 
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="SavingsGoal"
+                                   asp-action="Index">
+                                    Savings Goals
+                                </a>
+                            </li>
+                        </ul>
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Dashboard"
-                               asp-action="Index">
-                                Dashboard
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Income"
-                               asp-action="Index">
-                                Income
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Expense"
-                               asp-action="Index">
-                                Expenses
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="SavingsGoal"
-                               asp-action="Index">
-                                Savings Goals
-                            </a>
-                        </li>
-
-                        <li class="nav-item ms-lg-3">
-                            <a class="btn btn-outline-light btn-sm px-3"
-                               asp-controller="Account"
-                               asp-action="Logout">
-                                Logout
-                            </a>
-                        </li>
-
-                    </ul>
-
+                        <ul class="navbar-nav ms-auto align-items-lg-center">
+                            @if (!string.IsNullOrEmpty(userName))
+                            {
+                                <li class="nav-item me-3 text-light">
+                                    <small class="text-white-50">Signed in as</small> <strong>@userName</strong>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light btn-sm px-3"
+                                   asp-controller="Account"
+                                   asp-action="Logout">
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ms-auto align-items-lg-center">
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Account"
+                                   asp-action="Login">
+                                    Login
+                                </a>
+                            </li>
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn btn-primary btn-sm px-3 text-white"
+                                   asp-controller="Account"
+                                   asp-action="Register">
+                                    Register
+                                </a>
+                            </li>
+                        </ul>
+                    }
                 </div>
             </div>
         </nav>
     </header>
 
-
     <!-- MAIN CONTENT -->
     <main>
         @RenderBody()
     </main>
-
 
     <!-- FOOTER -->
     <footer class="app-footer">
@@ -119,14 +139,10 @@
         </div>
     </footer>
 
-
     <!-- SCRIPTS -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="~/js/site.js"
-            asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

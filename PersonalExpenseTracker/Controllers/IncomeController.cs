@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using PersonalExpenseTracker.Data;
 using PersonalExpenseTracker.Models;
@@ -33,7 +33,7 @@ namespace PersonalExpenseTracker.Controllers
                 SELECT IncomeId, UserId, Source, Amount, IncomeDate, Description
                 FROM Income
                 WHERE UserId = @UserId
-                ORDER BY IncomeDate DESC";
+                ORDER BY IncomeDate DESC, IncomeId DESC";
 
             using SqlCommand command = new SqlCommand(query, connection);
             command.Parameters.AddWithValue("@UserId", userId.Value);
@@ -68,7 +68,7 @@ namespace PersonalExpenseTracker.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            return View();
+            return View(new IncomeViewModel());
         }
 
         [HttpPost]
@@ -104,6 +104,31 @@ namespace PersonalExpenseTracker.Controllers
             command.Parameters.AddWithValue("@IncomeDate", model.IncomeDate);
             command.Parameters.AddWithValue("@Description",
                 (object?)model.Description ?? DBNull.Value);
+
+            command.ExecuteNonQuery();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using SqlConnection connection = _dbConnection.GetConnection();
+            connection.Open();
+
+            string query = "DELETE FROM Income WHERE IncomeId = @IncomeId AND UserId = @UserId";
+
+            using SqlCommand command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@IncomeId", id);
+            command.Parameters.AddWithValue("@UserId", userId.Value);
 
             command.ExecuteNonQuery();
 

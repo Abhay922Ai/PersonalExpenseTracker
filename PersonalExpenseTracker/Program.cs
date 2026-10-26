@@ -4,7 +4,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add MVC services
 builder.Services.AddControllersWithViews();
-builder.Services.AddSession();
+
+// Configure Session
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Register our database connection
 builder.Services.AddScoped<DbConnection>();

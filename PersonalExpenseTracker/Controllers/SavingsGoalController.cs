@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using PersonalExpenseTracker.Data;
 using PersonalExpenseTracker.Models;
@@ -70,7 +70,7 @@ namespace PersonalExpenseTracker.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            return View();
+            return View(new SavingsGoalViewModel());
         }
 
         [HttpPost]
@@ -116,6 +116,68 @@ namespace PersonalExpenseTracker.Controllers
             command.Parameters.AddWithValue(
                 "@TargetDate",
                 (object?)model.TargetDate ?? DBNull.Value);
+
+            command.ExecuteNonQuery();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using SqlConnection connection = _dbConnection.GetConnection();
+            connection.Open();
+
+            string query = "DELETE FROM SavingsGoals WHERE GoalId = @GoalId AND UserId = @UserId";
+
+            using SqlCommand command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@GoalId", id);
+            command.Parameters.AddWithValue("@UserId", userId.Value);
+
+            command.ExecuteNonQuery();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddProgress(int id, decimal amount)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (amount <= 0)
+            {
+                return RedirectToAction("Index");
+            }
+
+            using SqlConnection connection = _dbConnection.GetConnection();
+            connection.Open();
+
+            string query = @"
+                UPDATE SavingsGoals
+                SET SavedAmount = CASE 
+                    WHEN SavedAmount + @Amount > TargetAmount THEN TargetAmount
+                    ELSE SavedAmount + @Amount
+                END
+                WHERE GoalId = @GoalId AND UserId = @UserId";
+
+            using SqlCommand command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Amount", amount);
+            command.Parameters.AddWithValue("@GoalId", id);
+            command.Parameters.AddWithValue("@UserId", userId.Value);
 
             command.ExecuteNonQuery();
 

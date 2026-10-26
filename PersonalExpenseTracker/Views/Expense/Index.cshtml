@@ -1,4 +1,4 @@
-﻿@model List<PersonalExpenseTracker.Models.Expense>
+@model List<PersonalExpenseTracker.Models.Expense>
 
 @{
     ViewData["Title"] = "Expenses";
@@ -7,7 +7,10 @@
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Expenses</h2>
+        <div>
+            <h2>Expenses</h2>
+            <p class="text-muted mb-0">Track and manage all your expenditures</p>
+        </div>
 
         <a asp-action="Add" class="btn btn-danger">
             + Add Expense
@@ -16,37 +19,64 @@
 
     @if (Model.Count == 0)
     {
-        <div class="alert alert-info">
-            No expense records found.
+        <div class="card p-5 text-center shadow-sm">
+            <div class="mb-3" style="font-size: 2.5rem;">💸</div>
+            <h4>No expenses recorded yet</h4>
+            <p class="text-muted">Click the button below to add your first expense.</p>
+            <div>
+                <a asp-action="Add" class="btn btn-danger">
+                    + Add Expense
+                </a>
+            </div>
         </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Amount</th>
-                        <th>Date</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var expense in Model)
-                    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@expense.Category</td>
-                            <td>₹@expense.Amount.ToString("N2")</td>
-                            <td>@expense.ExpenseDate.ToString("dd-MM-yyyy")</td>
-                            <td>@expense.Description</td>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th class="text-end">Actions</th>
                         </tr>
-                    }
-                </tbody>
+                    </thead>
 
-            </table>
+                    <tbody>
+                        @foreach (var expense in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                        @expense.Category
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-danger">
+                                    - ₹@expense.Amount.ToString("N2")
+                                </td>
+                                <td>
+                                    @expense.ExpenseDate.ToString("dd MMM yyyy")
+                                </td>
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(expense.Description) ? "-" : expense.Description)
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="Delete" asp-route-id="@expense.ExpenseId" method="post" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete this expense of ₹@expense.Amount.ToString("N2")?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Expense">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 

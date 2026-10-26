@@ -1,22 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using PersonalExpenseTracker.Data;
 using PersonalExpenseTracker.ViewModels;
 using System.Security.Cryptography;
-using System.ComponentModel.DataAnnotations;
-
-namespace PersonalExpenseTracker.ViewModels
-{
-   
-}
-
 
 namespace PersonalExpenseTracker.Controllers
 {
     public class AccountController : Controller
     {
         private readonly DbConnection _dbConnection;
-
 
         public AccountController(DbConnection dbConnection)
         {
@@ -26,10 +18,16 @@ namespace PersonalExpenseTracker.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            if (HttpContext.Session.GetInt32("UserId") != null)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -84,6 +82,7 @@ namespace PersonalExpenseTracker.Controllers
 
                 insertCommand.ExecuteNonQuery();
 
+                TempData["SuccessMessage"] = "Account created successfully! Please sign in.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
@@ -95,7 +94,6 @@ namespace PersonalExpenseTracker.Controllers
                 return View(model);
             }
         }
-
 
         private string HashPassword(string password)
         {
@@ -116,10 +114,16 @@ namespace PersonalExpenseTracker.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            if (HttpContext.Session.GetInt32("UserId") != null)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -133,9 +137,9 @@ namespace PersonalExpenseTracker.Controllers
                 connection.Open();
 
                 string query = @"
-            SELECT UserId, FullName, Password
-            FROM Users
-            WHERE Email = @Email";
+                    SELECT UserId, FullName, Password
+                    FROM Users
+                    WHERE Email = @Email";
 
                 using SqlCommand command = new SqlCommand(query, connection);
 
@@ -179,36 +183,43 @@ namespace PersonalExpenseTracker.Controllers
                 return View(model);
             }
         }
+
         private bool VerifyPassword(string password, string storedPassword)
         {
             string[] parts = storedPassword.Split('.');
 
             if (parts.Length != 2)
             {
-                return false;
+                // Fallback for plain-text seed/test accounts
+                return password == storedPassword;
             }
 
-            byte[] salt = Convert.FromBase64String(parts[0]);
-            byte[] storedHash = Convert.FromBase64String(parts[1]);
+            try
+            {
+                byte[] salt = Convert.FromBase64String(parts[0]);
+                byte[] storedHash = Convert.FromBase64String(parts[1]);
 
-            byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                100000,
-                HashAlgorithmName.SHA256,
-                32);
+                byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+                    password,
+                    salt,
+                    100000,
+                    HashAlgorithmName.SHA256,
+                    32);
 
-            return CryptographicOperations.FixedTimeEquals(
-                hash,
-                storedHash);
+                return CryptographicOperations.FixedTimeEquals(
+                    hash,
+                    storedHash);
+            }
+            catch
+            {
+                return false;
+            }
         }
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-
             return RedirectToAction("Login", "Account");
         }
-
     }
-
 }
